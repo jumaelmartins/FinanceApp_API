@@ -1,12 +1,9 @@
-import express from "express";
-require('dotenv').config()
+import app from "./app.js";
 
+require("dotenv").config();
 
-
-const app = express();
-const port = process.env.SRV_PORT
+const port = process.env.SRV_PORT;
 
 app.listen(port, () => {
-   console.log(`Hello World! escutando na porta ${port}`)
-})
-
+  console.log(`Hello World! escutando na porta ${port}`);
+});
