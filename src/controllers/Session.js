@@ -12,7 +12,7 @@ class SessionController {
       });
     } else {
       const user = await User.findOne({ where: { email: email } });
-      if (!user.passwordIsValid(password)) {
+      if (!(await user.passwordIsValid(password))) {
         return res.json({
           errors: ["senha incorreta"],
         });
