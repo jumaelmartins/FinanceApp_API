@@ -1,5 +1,6 @@
 import express from "express";
 import UserRoute from "./routes/User.js";
+import SessionRoute from "./routes/Session.js"
 import "./database";
 
 class App {
@@ -14,7 +15,8 @@ class App {
     this.app.use(express.urlencoded({ extended: true }));
   }
   routes() {
-    this.app.use("/users", UserRoute);
+    this.app.use("/user", UserRoute);
+    this.app.use("/session", SessionRoute);
   }
 }
 
