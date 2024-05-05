@@ -2,6 +2,7 @@ import express from "express";
 import UserRoute from "./routes/User.js";
 import SessionRoute from "./routes/Session.js"
 import ExpenseCategoryRoute from "./routes/ExpenseCategory.js"
+import IncomeCategoryRoute from "./routes/IncomeCategory.js"
 import "./database";
 
 class App {
@@ -19,6 +20,7 @@ class App {
     this.app.use("/user", UserRoute);
     this.app.use("/session", SessionRoute);
     this.app.use("/expense-category", ExpenseCategoryRoute);
+    this.app.use("/income-category", IncomeCategoryRoute);
   }
 }
 

@@ -1,9 +1,11 @@
 import Sequelize from "sequelize";
 import databaseConfig from "../config/database";
 import User from "../models/User";
-import ExpenseCatogory from "../models/ExpenseCategory";
+import ExpenseCategory from "../models/ExpenseCategory";
+import IncomeCategory from "../models/IncomeCategory";
 
-const models = [User, ExpenseCatogory];
+
+const models = [User, ExpenseCategory, IncomeCategory];
 
 const connection = new Sequelize(databaseConfig);
 
