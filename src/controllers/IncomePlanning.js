@@ -1,10 +1,9 @@
-import ExpensePlanning from "../models/ExpensePlanning";
+import IncomePlanning from "../models/IncomePlanning";
 
-class ExpensePlanningController {
+class IncomePlanningController {
   async index(req, res) {
-    const plannedExpense = await ExpensePlanning.findAll();
-
-    res.json(plannedExpense);
+    const plannedIncome = await IncomePlanning.findAll();
+    res.json(plannedIncome);
   }
 
   async store(req, res) {
@@ -25,7 +24,7 @@ class ExpensePlanningController {
     const cyear = cdate.getFullYear();
     const nmonth = `${cmonth}/${cyear}`;
 
-    const plannigExist = await ExpensePlanning.findOne({
+    const plannigExist = await IncomePlanning.findOne({
       where: { category_id: category_id, month: nmonth },
     });
 
@@ -39,7 +38,7 @@ class ExpensePlanningController {
       });
     }
 
-    const planning = await ExpensePlanning.create({
+    const planning = await IncomePlanning.create({
       user_id: req.userId,
       category_id,
       month,
@@ -51,7 +50,7 @@ class ExpensePlanningController {
 
   async update(req, res) {
     const { month, category_id, id, planned_amount } = req.body;
-    const planning = await ExpensePlanning.findByPk(id);
+    const planning = await IncomePlanning.findByPk(id);
     const errors = [];
 
     if (planned_amount !== planning.planned_amount) {
@@ -72,7 +71,7 @@ class ExpensePlanningController {
 
   async delete(req, res) {
     const { id } = req.body;
-    const plannig = await ExpensePlanning.findByPk(id);
+    const plannig = await IncomePlanning.findByPk(id);
 
     const errors = [];
 
@@ -91,4 +90,4 @@ class ExpensePlanningController {
   }
 }
 
-export default new ExpensePlanningController();
+export default new IncomePlanningController();
