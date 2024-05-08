@@ -1,10 +1,11 @@
 import express from "express";
 import UserRoute from "./routes/User.js";
-import SessionRoute from "./routes/Session.js"
-import ExpenseCategoryRoute from "./routes/ExpenseCategory.js"
-import IncomeCategoryRoute from "./routes/IncomeCategory.js"
-import ExpensePlanningRoute from "./routes/ExpensePlanning.js"
-import IncomePlanningRoute from "./routes/IncomePlanning.js"
+import SessionRoute from "./routes/Session.js";
+import ExpenseCategoryRoute from "./routes/ExpenseCategory.js";
+import IncomeCategoryRoute from "./routes/IncomeCategory.js";
+import ExpensePlanningRoute from "./routes/ExpensePlanning.js";
+import IncomePlanningRoute from "./routes/IncomePlanning.js";
+import ExpenseRoute from "./routes/Expense.js";
 import "./database";
 
 class App {
@@ -25,6 +26,7 @@ class App {
     this.app.use("/income-category", IncomeCategoryRoute);
     this.app.use("/expense-planning", ExpensePlanningRoute);
     this.app.use("/income-planning", IncomePlanningRoute);
+    this.app.use("/expenses", ExpenseRoute);
   }
 }
 

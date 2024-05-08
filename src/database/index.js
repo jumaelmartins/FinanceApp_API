@@ -5,8 +5,16 @@ import ExpenseCategory from "../models/ExpenseCategory";
 import IncomeCategory from "../models/IncomeCategory";
 import ExpensePlanning from "../models/ExpensePlanning";
 import IncomePlanning from "../models/IncomePlanning";
+import Expense from "../models/Expense";
 
-const models = [User, ExpenseCategory, IncomeCategory, ExpensePlanning, IncomePlanning];
+const models = [
+  User,
+  ExpenseCategory,
+  IncomeCategory,
+  ExpensePlanning,
+  IncomePlanning,
+  Expense,
+];
 
 const connection = new Sequelize(databaseConfig);
 
