@@ -7,6 +7,7 @@ import ExpensePlanningRoute from "./routes/ExpensePlanning.js";
 import IncomePlanningRoute from "./routes/IncomePlanning.js";
 import ExpenseRoute from "./routes/Expense.js";
 import IncomeRoute from "./routes/Income.js";
+import ExpenseTypeRoute from "./routes/ExpenseType.js";
 import "./database";
 
 class App {
@@ -29,6 +30,7 @@ class App {
     this.app.use("/income-planning", IncomePlanningRoute);
     this.app.use("/expenses", ExpenseRoute);
     this.app.use("/incomes", IncomeRoute);
+    this.app.use("/expense-types", ExpenseTypeRoute);
   }
 }
 

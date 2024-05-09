@@ -1,15 +1,16 @@
 module.exports = {
   up: (queryInterface, Sequelize) =>
-    queryInterface.createTable("expenses", {
+    queryInterface.createTable("expense_type", {
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
       },
-      date: {
-        type: Sequelize.DATEONLY,
+      type: {
+        type: Sequelize.STRING,
         allowNull: false,
+        unique: true,
       },
       user_id: {
         type: Sequelize.INTEGER,
@@ -17,21 +18,6 @@ module.exports = {
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
         allowNull: false,
-      },
-      category_id: {
-        type: Sequelize.INTEGER,
-        references: { model: "expense_categories", key: "id" },
-        onUpdate: "CASCADE",
-        onDelete: "SET NULL",
-        allowNull: true,
-      },
-      amount: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false,
-      },
-      description: {
-        type: Sequelize.STRING,
-        allowNull: true,
       },
       created_at: {
         type: Sequelize.DATE,
@@ -43,5 +29,6 @@ module.exports = {
       },
     }),
   down: (queryInterface, Sequelize) =>
-    queryInterface.dropTable("expenses"),
+    queryInterface.dropTable("expense_type"),
 };
+
