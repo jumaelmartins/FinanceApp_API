@@ -3,7 +3,6 @@ import PayMethod from "../models/PayMethod";
 class PayMethodController {
   async index(req, res) {
     const method = await PayMethod.findAll();
-
     res.json(method);
   }
 

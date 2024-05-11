@@ -14,6 +14,7 @@ export default class ExpenseType extends Model {
       },
       {
         sequelize,
+        tableName: "expense_type"
       }
     );
     return this;

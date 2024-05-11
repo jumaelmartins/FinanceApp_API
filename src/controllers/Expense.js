@@ -8,7 +8,7 @@ class ExpenseController {
   }
 
   async store(req, res) {
-    const { date, category_id, amount, description } = req.body;
+    const { date, category_id, amount, description, type_id, pay_method_id } = req.body;
 
     const errors = [];
 
@@ -32,6 +32,8 @@ class ExpenseController {
       date,
       amount,
       description,
+      type_id,
+      pay_method_id
     });
 
     return res.json(expense);
