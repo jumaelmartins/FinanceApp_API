@@ -38,5 +38,9 @@ export default class Expense extends Model {
       foreignKey: "type_id",
       as: "type",
     });
+    this.belongsTo(models.PayMethod, {
+      foreignKey: "pay_method_id",
+      as: "method",
+    });
   }
 }

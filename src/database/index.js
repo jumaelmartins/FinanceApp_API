@@ -8,6 +8,7 @@ import IncomePlanning from "../models/IncomePlanning";
 import Expense from "../models/Expense";
 import Income from "../models/Income";
 import ExpenseType from "../models/ExpenseType";
+import PayMethod from "../models/PayMethod";
 
 const models = [
   User,
@@ -18,6 +19,7 @@ const models = [
   Expense,
   Income,
   ExpenseType,
+  PayMethod
 ];
 
 const connection = new Sequelize(databaseConfig);

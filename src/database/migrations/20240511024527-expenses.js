@@ -32,6 +32,13 @@ module.exports = {
         onDelete: "SET NULL",
         allowNull: true,
       },
+      pay_method_id: {
+        type: Sequelize.INTEGER,
+        references: { model: "pay_methods", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL",
+        allowNull: true,
+      },
       amount: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
