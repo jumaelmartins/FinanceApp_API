@@ -9,6 +9,7 @@ import ExpenseRoute from "./routes/Expense.js";
 import IncomeRoute from "./routes/Income.js";
 import ExpenseTypeRoute from "./routes/ExpenseType.js";
 import PayMethodRoute from "./routes/PayMethod.js";
+import ProfilePictureRoute from "./routes/ProfilePicture.js";
 
 import "./database";
 
@@ -34,6 +35,7 @@ class App {
     this.app.use("/incomes", IncomeRoute);
     this.app.use("/expense-types", ExpenseTypeRoute);
     this.app.use("/pay-method", PayMethodRoute);
+    this.app.use("/profile-picture", ProfilePictureRoute);
   }
 }
 

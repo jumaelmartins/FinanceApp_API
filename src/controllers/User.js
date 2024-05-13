@@ -1,7 +1,51 @@
-import User from "../models/User";
 import * as Yup from "yup";
+import User from "../models/User";
+import Expense from "../models/Expense";
+
+import ProfilePicture from "../models/ProfilePicture";
+import Income from "../models/Income";
+import ExpensePlanning from "../models/ExpensePlanning";
+import IncomePlanning from "../models/IncomePlanning";
 
 class UserController {
+  async show(req, res) {
+    const { id } = req.body;
+    console.log(id);
+    const user = await User.findOne({
+      where: { id: id },
+      attributes: ["id", "username", "email"],
+      include: [
+        {
+          model: Expense,
+          as: "expenses",
+          attributes: ["id", "date", "amount", "description"],
+        },
+        {
+          model: Income,
+          as: "incomes",
+          attributes: ["id", "date", "amount"],
+        },
+        {
+          model: ExpensePlanning,
+          as: "expansePlanning",
+          attributes: ["id", "month", "planned_amount"],
+        },
+        {
+          model: IncomePlanning,
+          as: "incomePlanning",
+          attributes: ["id", "month", "planned_amount"],
+        },
+        {
+          model: ProfilePicture,
+          as: "picture",
+          attributes: ["id", "name", "url"],
+        },
+      ],
+    });
+
+    res.json(user);
+  }
+
   async store(req, res) {
     const { email } = req.body;
     const userExists = await User.findOne({ where: { email: email } });

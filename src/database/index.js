@@ -9,6 +9,7 @@ import Expense from "../models/Expense";
 import Income from "../models/Income";
 import ExpenseType from "../models/ExpenseType";
 import PayMethod from "../models/PayMethod";
+import ProfilePicture from "../models/ProfilePicture";
 
 const models = [
   User,
@@ -19,7 +20,8 @@ const models = [
   Expense,
   Income,
   ExpenseType,
-  PayMethod
+  PayMethod,
+  ProfilePicture
 ];
 
 const connection = new Sequelize(databaseConfig);
