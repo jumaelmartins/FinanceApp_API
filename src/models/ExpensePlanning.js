@@ -19,14 +19,6 @@ export default class ExpensePlanning extends Model {
         tableName: "expense_planning",
       }
     );
-    this.addHook("beforeSave", async (expense_planning) => {
-      if (expense_planning.month) {
-        const date = new Date(expense_planning.month);
-        const month = date.getMonth() + 2;
-        const year = date.getFullYear();
-        expense_planning.month = `${month}/${year}`;
-      }
-    });
 
     return this;
   }

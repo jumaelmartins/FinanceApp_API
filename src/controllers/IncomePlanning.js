@@ -19,13 +19,8 @@ class IncomePlanningController {
       errors.push("Mês não informado");
     }
 
-    const cdate = new Date(month);
-    const cmonth = cdate.getMonth() + 2;
-    const cyear = cdate.getFullYear();
-    const nmonth = `${cmonth}/${cyear}`;
-
     const plannigExist = await IncomePlanning.findOne({
-      where: { category_id: category_id, month: nmonth },
+      where: { category_id: category_id, month: month },
     });
 
     if (plannigExist) {

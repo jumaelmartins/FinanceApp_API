@@ -19,14 +19,6 @@ export default class IncomePlanning extends Model {
         tableName: "income_planning",
       }
     );
-    this.addHook("beforeSave", async (income_planning) => {
-      if (income_planning.month) {
-        const date = new Date(income_planning.month);
-        const month = date.getMonth() + 2;
-        const year = date.getFullYear();
-        income_planning.month = `${month}/${year}`;
-      }
-    });
 
     return this;
   }

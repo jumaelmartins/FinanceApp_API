@@ -1,8 +1,24 @@
 import ExpenseCategory from "../models/ExpenseCategory";
+import ExpensePlanning from "../models/ExpensePlanning";
+import Expense from "../models/Expense";
 
 class ExpenseCategoryController {
   async index(req, res) {
-    const categories = await ExpenseCategory.findAll();
+    const categories = await ExpenseCategory.findAll({
+      attributes: ["id", "category_name"],
+      include: [
+        {
+          model: ExpensePlanning,
+          as: "plannedExpenses",
+          attributes: ["id", "month", "planned_amount"]
+        },
+        {
+          model: Expense,
+          as: "expenses",
+          attributes: ["id", "date", "amount"]
+        }
+      ]
+    });
 
     res.json(categories);
   }
