@@ -1,14 +1,37 @@
 import Expense from "../models/Expense";
+import ExpenseCategory from "../models/ExpenseCategory";
+import ExpenseType from "../models/ExpenseType";
+import PayMethod from "../models/PayMethod";
 
 class ExpenseController {
   async index(req, res) {
-    const expense = await Expense.findAll();
+    const expense = await Expense.findAll({
+      attributes: ["id", "date", "amount", "description"],
+      include: [
+        {
+          model: ExpenseCategory,
+          as: "category",
+          attributes: ["id", "category_name"],
+        },
+        {
+          model: ExpenseType,
+          as: "type",
+          attributes: ["id", "type"],
+        },
+        {
+          model: PayMethod,
+          as: "method",
+          attributes: ["id", "method"],
+        },
+      ],
+    });
 
     res.json(expense);
   }
 
   async store(req, res) {
-    const { date, category_id, amount, description, type_id, pay_method_id } = req.body;
+    const { date, category_id, amount, description, type_id, pay_method_id } =
+      req.body;
 
     const errors = [];
 
@@ -33,9 +56,8 @@ class ExpenseController {
       amount,
       description,
       type_id,
-      pay_method_id
+      pay_method_id,
     });
-
     return res.json(expense);
   }
 

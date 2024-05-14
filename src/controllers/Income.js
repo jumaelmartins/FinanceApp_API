@@ -1,5 +1,6 @@
 import Income from "../models/Income";
 
+
 class IncomeController {
   async index(req, res) {
     const income = await Income.findAll();
