@@ -1,10 +1,25 @@
 import IncomeCategory from "../models/IncomeCategory";
+import Income from "../models/Income";
+import IncomePlannig from "../models/IncomePlanning";
 
 class IncomeCategoryController {
   async index(req, res) {
+    const categories = await IncomeCategory.findAll({
+      attributes: ["id", "category_name"],
+      include: [
+        {
+          model: Income,
+          as: "incomes",
+          attributes: ["date", "amount", "description"],
+        },
+        {
+          model: IncomePlannig,
+          as: "planning",
+          attributes: ["month", "planned_amount"],
+        },
+      ],
+    });
 
-    const categories = await IncomeCategory.findAll()
-    
     res.json(categories);
   }
 

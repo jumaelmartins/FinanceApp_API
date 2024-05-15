@@ -1,6 +1,5 @@
 import Income from "../models/Income";
 
-
 class IncomeController {
   async index(req, res) {
     const income = await Income.findAll();
@@ -43,16 +42,22 @@ class IncomeController {
     const income = await Income.findByPk(id);
     const errors = [];
 
-    if (amount !== Income.amount) {
-      if (amount === "") {
-        errors.push("Valor não pode ser nulo");
+    try {
+      if (amount !== Income.amount) {
+        if (amount === "") {
+          errors.push("Valor não pode ser nulo");
+        }
       }
-    }
 
-    if (errors.length > 0) {
-      return res.status(401).json({
-        errors: errors.map((err) => err),
-      });
+      if (errors.length > 0) {
+        return res.status(401).json({
+          errors: errors.map((err) => err),
+        });
+      }
+    } catch (e) {
+      res.json({
+        errors: [e]
+      })
     }
 
     await income.update(req.body);

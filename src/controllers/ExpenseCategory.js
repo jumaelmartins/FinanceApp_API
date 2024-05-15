@@ -24,7 +24,7 @@ class ExpenseCategoryController {
   }
 
   async store(req, res) {
-    const { category_name } = req.body;
+    const { category_name, type_id } = req.body;
 
     if (!category_name) {
       return res.status(401).json({
@@ -44,6 +44,7 @@ class ExpenseCategoryController {
     const category = await ExpenseCategory.create({
       user_id: req.userId,
       category_name,
+      type_id
     });
     return res.json(category);
   }

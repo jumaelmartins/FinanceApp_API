@@ -22,5 +22,7 @@ export default class ExpenseType extends Model {
 
   static associate(models) {
     this.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
+    this.hasMany(models.Expense, { foreignKey: "type_id", as: "expenses" });
+    this.hasMany(models.ExpenseCategory, { foreignKey: "type_id", as: "categories" });
   }
 }

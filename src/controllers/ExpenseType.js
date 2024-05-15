@@ -1,8 +1,23 @@
 import ExpenseType from "../models/ExpenseType";
+import Expense from "../models/Expense";
+import ExpenseCategory from "../models/ExpenseCategory";
 
 class ExpenseTypeController {
   async index(req, res) {
-    const type = await ExpenseType.findAll();
+    const type = await ExpenseType.findAll({
+      attributes: ["id", "type"],
+      include: [{
+        model: Expense,
+        as: "expenses",
+        attributes: ["id", "date", "amount", "description"],
+      },
+      {
+        model: ExpenseCategory,
+        as: "categories",
+        attributes: ["id", "category_name"],
+      },
+    ]
+    });
 
     res.json(type);
   }

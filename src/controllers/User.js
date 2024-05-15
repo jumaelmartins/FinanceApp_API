@@ -1,4 +1,3 @@
-import * as Yup from "yup";
 import User from "../models/User";
 import Expense from "../models/Expense";
 
@@ -51,31 +50,24 @@ class UserController {
     const userExists = await User.findOne({ where: { email: email } });
     if (userExists) {
       return res.status(401).json({
-        errors: ["usuario já existe"],
+        errors: ["email já cadastrado"],
       });
     }
-    const { id, username } = await User.create(req.body);
-    res.json({ id, username, email });
+    try {
+      const { id, username } = await User.create(req.body);
+      res.json({ id, username, email });
+    } catch (e) {
+      res.json({
+        errors: e.errors.map((e) => e.message),
+      });
+    }
   }
 
   async update(req, res) {
-    const schema = Yup.object().shape({
-      username: Yup.string(),
-      email: Yup.string().email(),
-      oldPassword: Yup.string(),
-      password: Yup.string()
-        .min(6)
-        .when("oldPassword", (oldPassword, field) =>
-          oldPassword ? field.required() : field
-        ),
-      confirmPassword: Yup.string().when("password", (password, field) =>
-        password ? field.required().oneOf([Yup.ref("password")]) : field
-      ),
-    });
-
     const user = await User.findByPk(req.userId);
-    const { username, email, oldPassword } = await req.body;
+    const { username, email, oldPassword, confirmPassword, password } = await req.body;
 
+    try {
     let errors = [];
 
     if (username && username !== user.username) {
@@ -85,7 +77,6 @@ class UserController {
       usernameExist !== null ? errors.push("Usuario já existe") : "";
     }
 
-    console.log("aqui");
     if (email && email !== user.email) {
       const emailExist = await User.findOne({
         where: { email: email },
@@ -93,12 +84,21 @@ class UserController {
       emailExist !== null ? errors.push("Email já existe") : "";
     }
 
+    if((oldPassword && !password) || (oldPassword && !confirmPassword)) {
+      errors.push("Necessario informar nova senha");
+    }
+
     if (oldPassword && !(await user.passwordIsValid(oldPassword))) {
       errors.push("Senha Incorreta");
     }
 
-    if (!(await schema.isValid(req.body))) {
-      errors.push("As duas senhas precisam ser iguais");
+
+    if (password && !oldPassword) {
+      errors.push("Informe a senha antiga");
+    }
+    
+    if (password !== confirmPassword) {
+      errors.push("As senhas precisam ser iguais");
     }
 
     if (errors.length > 0) {
@@ -116,6 +116,12 @@ class UserController {
       username,
       email,
     });
+
+  } catch (e) {
+    res.json({
+      errors: e.errors.message
+    })
+  }
   }
 }
 

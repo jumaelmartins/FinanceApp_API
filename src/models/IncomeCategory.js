@@ -20,6 +20,8 @@ export default class IncomeCategory extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
+    this.belongsTo(models.User, { foreignKey: "user_id", as: "user" })
+    this.hasMany(models.Income, { foreignKey: "category_id", as: "incomes" })
+    this.hasMany(models.IncomePlanning, { foreignKey: "category_id", as: "planning" })
   }
 }
