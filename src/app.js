@@ -10,6 +10,7 @@ import IncomeRoute from "./routes/Income.js";
 import ExpenseTypeRoute from "./routes/ExpenseType.js";
 import PayMethodRoute from "./routes/PayMethod.js";
 import ProfilePictureRoute from "./routes/ProfilePicture.js";
+import cors from "cors";
 
 import "./database";
 
@@ -23,6 +24,7 @@ class App {
   middlewares() {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(cors());
   }
   routes() {
     this.app.use("/user", UserRoute);
