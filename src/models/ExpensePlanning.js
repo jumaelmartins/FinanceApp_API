@@ -5,7 +5,7 @@ export default class ExpensePlanning extends Model {
     super.init(
       {
         month: {
-          type: Sequelize.STRING,
+          type: Sequelize.DATEONLY,
           defaultValue: "",
         },
         planned_amount: {

@@ -5,28 +5,33 @@ import PayMethod from "../models/PayMethod";
 
 class ExpenseController {
   async index(req, res) {
-    const expense = await Expense.findAll({
-      attributes: ["id", "date", "amount", "description"],
-      include: [
-        {
-          model: ExpenseCategory,
-          as: "category",
-          attributes: ["id", "category_name"],
-        },
-        {
-          model: ExpenseType,
-          as: "type",
-          attributes: ["id", "type"],
-        },
-        {
-          model: PayMethod,
-          as: "method",
-          attributes: ["id", "method"],
-        },
-      ],
-    });
+    try {
+      const expense = await Expense.findAll({
+        where: { user_id: req.userId },
+        attributes: ["id", "date", "amount", "description"],
+        include: [
+          {
+            model: ExpenseCategory,
+            as: "category",
+            attributes: ["id", "category_name"],
+          },
+          {
+            model: ExpenseType,
+            as: "type",
+            attributes: ["id", "type"],
+          },
+          {
+            model: PayMethod,
+            as: "method",
+            attributes: ["id", "method"],
+          },
+        ],
+      });
 
-    res.json(expense);
+      res.json(expense);
+    } catch (err) {
+      res.status(400).json({ errors: "(T_T)" });
+    }
   }
 
   async store(req, res) {
@@ -62,7 +67,7 @@ class ExpenseController {
   }
 
   async update(req, res) {
-    const { date, category_id, id, amount, description } = req.body;
+    const { id, amount } = req.body;
     const expense = await Expense.findByPk(id);
     const errors = [];
 
@@ -79,7 +84,7 @@ class ExpenseController {
     }
 
     await expense.update(req.body);
-    return res.json({ date, category_id, id, amount, description });
+    return res.json(req.body);
   }
 
   async delete(req, res) {
