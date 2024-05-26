@@ -19,7 +19,6 @@ export default class ExpensePlanning extends Model {
         tableName: "expense_planning",
       }
     );
-
     return this;
   }
 

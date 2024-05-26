@@ -1,6 +1,7 @@
 import app from "./app.js";
+import dotenv from "dotenv";
 
-require("dotenv").config();
+dotenv.config();
 
 const port = process.env.SRV_PORT;
 

@@ -6,6 +6,7 @@ const router = Router();
 
 router.get("/", authMiddleware, ProfilePictureController.index);
 router.post("/", authMiddleware, ProfilePictureController.store);
-router.delete("/", authMiddleware, ProfilePictureController.delete);
+router.put("/:id", authMiddleware, ProfilePictureController.update);
+router.delete("/:id", authMiddleware, ProfilePictureController.delete);
 
 export default router;

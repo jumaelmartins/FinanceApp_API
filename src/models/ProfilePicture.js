@@ -7,20 +7,16 @@ export default class ProfilePicture extends Model {
         name: {
           type: Sequelize.STRING,
           defaultValue: "",
-          unique: {
-            msg: "foto já existe",
-          },
+          unique: { msg: "foto já existe" },
         },
         url: {
           type: Sequelize.STRING,
           defaultValue: "",
-          unique: {
-            msg: "foto já existe",
-          },
+          unique: { msg: "foto já existe" },
         },
       },
       {
-        tableName: 'profile_picture',
+        tableName: "profile_picture",
         sequelize,
       }
     );

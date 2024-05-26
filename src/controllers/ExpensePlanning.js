@@ -2,87 +2,92 @@ import ExpensePlanning from "../models/ExpensePlanning";
 
 class ExpensePlanningController {
   async index(req, res) {
-    const plannedExpense = await ExpensePlanning.findAll();
-
-    res.json(plannedExpense);
+    try {
+      const plannedExpenses = await ExpensePlanning.findAll();
+      res.json(plannedExpenses);
+    } catch (err) {
+      res.status(400).json({ errors: ["Erro ao buscar planejamentos"] });
+    }
   }
 
   async store(req, res) {
     const { month, category_id, planned_amount } = req.body;
-
     const errors = [];
 
-    if (!category_id) {
-      errors.push("Categoria não informada");
-    }
+    if (!category_id) errors.push("Categoria não informada");
+    if (!month) errors.push("Mês não informado");
 
-    if (!month) {
-      errors.push("Mês não informado");
-    }
-
-    const plannigExist = await ExpensePlanning.findOne({
-      where: { category_id: category_id, month: month },
-    });
-
-    if (plannigExist) {
-      errors.push("Já existe um planejamento dessa categoria no mês informado");
-    }
-
-    if (errors.length > 0) {
-      return res.status(401).json({
-        errors: errors.map((err) => err),
+    try {
+      const planningExist = await ExpensePlanning.findOne({
+        where: { category_id, month },
       });
+
+      if (planningExist)
+        errors.push(
+          "Já existe um planejamento dessa categoria no mês informado"
+        );
+
+      if (errors.length > 0) {
+        return res.status(401).json({ errors });
+      }
+
+      const planning = await ExpensePlanning.create({
+        user_id: req.userId,
+        category_id,
+        month,
+        planned_amount,
+      });
+      return res.json(planning);
+    } catch (err) {
+      return res.status(400).json({ errors: ["Erro ao criar planejamento"] });
     }
-
-    const planning = await ExpensePlanning.create({
-      user_id: req.userId,
-      category_id,
-      month,
-      planned_amount,
-    });
-
-    return res.json(planning);
   }
 
   async update(req, res) {
     const { month, category_id, id, planned_amount } = req.body;
-    const planning = await ExpensePlanning.findByPk(id);
     const errors = [];
 
-    if (planned_amount !== planning.planned_amount) {
-      if (planned_amount === "") {
+    try {
+      const planning = await ExpensePlanning.findByPk(id);
+
+      if (planned_amount !== undefined && planned_amount === "") {
         errors.push("Valor não pode ser nulo");
       }
-    }
 
-    if (errors.length > 0) {
-      return res.status(401).json({
-        errors: errors.map((err) => err),
-      });
-    }
+      if (errors.length > 0) {
+        return res.status(401).json({ errors });
+      }
 
-    await planning.update(req.body);
-    return res.json({ month, category_id, id, planned_amount });
+      await planning.update(req.body);
+      return res.json(planning);
+    } catch (err) {
+      return res
+        .status(400)
+        .json({ errors: ["Erro ao atualizar planejamento"] });
+    }
   }
 
   async delete(req, res) {
     const { id } = req.body;
-    const plannig = await ExpensePlanning.findByPk(id);
-
     const errors = [];
 
-    if (!plannig) {
-      errors.push("Categoria não localizada");
-    }
+    try {
+      const planning = await ExpensePlanning.findByPk(id);
+      if (!planning) {
+        errors.push("Planejamento não localizado");
+      }
 
-    if (errors.length > 0) {
-      return res.status(401).json({
-        errors: errors.map((err) => err),
-      });
-    }
+      if (errors.length > 0) {
+        return res.status(401).json({ errors });
+      }
 
-    plannig.destroy();
-    return res.status(200).json({ Tudo: "OK" });
+      await planning.destroy();
+      return res
+        .status(200)
+        .json({ message: "Planejamento excluído com sucesso" });
+    } catch (err) {
+      return res.status(400).json({ errors: ["Erro ao excluir planejamento"] });
+    }
   }
 }
 

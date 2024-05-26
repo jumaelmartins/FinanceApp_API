@@ -7,9 +7,7 @@ export default class PayMethod extends Model {
         method: {
           type: Sequelize.STRING,
           defaultValue: "",
-          unique: {
-            msg: "categoria já existe",
-          },
+          unique: { msg: "categoria já existe" },
         },
       },
       {

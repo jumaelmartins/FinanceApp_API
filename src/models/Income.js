@@ -24,7 +24,6 @@ export default class Income extends Model {
         tableName: "incomes",
       }
     );
-
     return this;
   }
 

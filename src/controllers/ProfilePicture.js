@@ -1,52 +1,129 @@
 import ProfilePicture from "../models/ProfilePicture";
 import multer from "multer";
 import multerConfig from "../config/multer";
+import fs from "fs";
+import path from "path";
 
 const upload = multer(multerConfig).single("nome");
 
 class ProfilePictureController {
   async index(req, res) {
-    const pictures = await ProfilePicture.findAll();
-
-    res.json(pictures);
+    try {
+      const pictures = await ProfilePicture.findAll({
+        where: { user_id: req.userId },
+      });
+      res.json(pictures);
+    } catch (error) {
+      res.status(400).json({ Error: ["Somenthing's Went Wrong"] });
+    }
   }
 
   store(req, res) {
     return upload(req, res, async (error) => {
-      if (error) {
-        return res.status(400).json({
-          errors: [error],
+      try {
+        if (error) {
+          return res.status(400).json({
+            errors: [error],
+          });
+        }
+
+        const picture = await ProfilePicture.create({
+          user_id: req.userId,
+          name: req.file.filename,
+          url: req.file.path,
         });
+
+        res.json(picture);
+      } catch (error) {
+        res.status(401).json({ errors: ["Somenthing's Went Wrong"] });
       }
+    });
+  }
 
-      const picture = await ProfilePicture.create({
-        user_id: req.userId,
-        name: req.file.filename,
-        url: req.file.path,
-      });
+  async update(req, res) {
+    return upload(req, res, async (error) => {
+      try {
+        if (error) {
+          return res.status(400).json({
+            errors: [error],
+          });
+        }
 
-      res.json(picture);
+        const id = req.params.id;
+        const picture = await ProfilePicture.findByPk(id);
+
+        if (!picture) {
+          return res.status(401).json({
+            errors: ["Foto não localizada"],
+          });
+        }
+
+        if (picture.user_id !== req.userId) {
+          return res.status(403).json({
+            errors: ["Usuario não autorizado"],
+          });
+        }
+
+        // Deletar o arquivo antigo
+        const oldFilePath = path.resolve(
+          __dirname,
+          "..",
+          "uploads",
+          picture.name
+        );
+        fs.unlink(oldFilePath, async (err) => {
+          if (err) {
+            return res
+              .status(400)
+              .json({ errors: ["Erro ao deletar o arquivo antigo"] });
+          }
+
+          // Atualizar com o novo arquivo
+          picture.name = req.file.filename;
+          picture.url = req.file.path;
+          await picture.save();
+
+          return res.json(picture);
+        });
+      } catch (error) {
+        res.status(401).json({ errors: ["Something's Went Wrong"] });
+      }
     });
   }
 
   async delete(req, res) {
-    const { id } = req.file;
-    const picture = await ProfilePicture.findByPk(id);
+    const id = req.params.id;
+    try {
+      const picture = await ProfilePicture.findByPk(id);
 
-    const errors = [];
+      if (!picture) {
+        return res.status(401).json({
+          errors: ["Foto não localizada"],
+        });
+      }
 
-    if (!picture) {
-      errors.push("Categoria não localizada");
-    }
+      if (picture.user_id !== req.userId) {
+        return res.status(403).json({
+          errors: ["Usuario não autorizado"],
+        });
+      }
 
-    if (errors.length > 0) {
-      return res.status(401).json({
-        errors: errors.map((err) => err),
+      const filePath = path.resolve(__dirname, "..", "uploads", picture.name);
+      console.log(filePath);
+
+      fs.unlink(filePath, async (err) => {
+        if (err) {
+          return res
+            .status(400)
+            .json({ errors: ["Erro ao deletar o arquivo"] });
+        }
+
+        await picture.destroy();
+        return res.status(200).json({ message: "Foto deletada com sucesso" });
       });
+    } catch (error) {
+      res.status(401).json({ errors: ["Something's Went Wrong"] });
     }
-
-    picture.destroy();
-    return res.status(200).json({ Tudo: "OK" });
   }
 }
 

@@ -1,4 +1,7 @@
 import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+
 import UserRoute from "./routes/User.js";
 import SessionRoute from "./routes/Session.js";
 import ExpenseCategoryRoute from "./routes/ExpenseCategory.js";
@@ -11,9 +14,10 @@ import ExpenseTypeRoute from "./routes/ExpenseType.js";
 import PayMethodRoute from "./routes/PayMethod.js";
 import ProfilePictureRoute from "./routes/ProfilePicture.js";
 import SummaryRoute from "./routes/Summary.js";
-import cors from "cors";
 
 import "./database";
+
+dotenv.config();
 
 class App {
   constructor() {
@@ -27,6 +31,7 @@ class App {
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cors());
   }
+
   routes() {
     this.app.use("/user", UserRoute);
     this.app.use("/session", SessionRoute);
@@ -39,7 +44,7 @@ class App {
     this.app.use("/expense-types", ExpenseTypeRoute);
     this.app.use("/pay-method", PayMethodRoute);
     this.app.use("/profile-picture", ProfilePictureRoute);
-    this.app.use("/summary", SummaryRoute)
+    this.app.use("/summary", SummaryRoute);
   }
 }
 

@@ -17,8 +17,14 @@ class SummaryController {
     if (month && year) {
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0); // Last day of the month
-      whereClause.date = { [Op.between]: [startDate, endDate] };
-      plannedWhereClause.date = { [Op.between]: [startDate, endDate] };
+      whereClause.date = {
+        user_id: req.userId,
+        [Op.between]: [startDate, endDate],
+      };
+      plannedWhereClause.date = {
+        user_id: req.userId,
+        [Op.between]: [startDate, endDate],
+      };
     }
 
     try {
@@ -97,6 +103,7 @@ class SummaryController {
           [Sequelize.fn("SUM", Sequelize.col("amount")), "total"],
         ],
         where: {
+          user_id: req.userId,
           date: { [Op.between]: [startDate, endDate] },
         },
         group: [Sequelize.fn("DATE_FORMAT", Sequelize.col("date"), "%Y-%m")],
@@ -112,6 +119,7 @@ class SummaryController {
           [Sequelize.fn("SUM", Sequelize.col("planned_amount")), "total"],
         ],
         where: {
+          user_id: req.userId,
           month: { [Op.between]: [startDate, endDate] },
         },
         group: [Sequelize.fn("DATE_FORMAT", Sequelize.col("month"), "%Y-%m")],
@@ -127,6 +135,7 @@ class SummaryController {
           [Sequelize.fn("SUM", Sequelize.col("amount")), "total"],
         ],
         where: {
+          user_id: req.userId,
           date: { [Op.between]: [startDate, endDate] },
         },
         group: [Sequelize.fn("DATE_FORMAT", Sequelize.col("date"), "%Y-%m")],
@@ -142,6 +151,7 @@ class SummaryController {
           [Sequelize.fn("SUM", Sequelize.col("planned_amount")), "total"],
         ],
         where: {
+          user_id: req.userId,
           month: { [Op.between]: [startDate, endDate] },
         },
         group: [Sequelize.fn("DATE_FORMAT", Sequelize.col("month"), "%Y-%m")],
@@ -232,7 +242,6 @@ class SummaryController {
         .json({ message: "Error getting the financial summary by month" });
     }
   }
-
   async getTypeSummary(req, res) {
     const { month, year } = req.query;
 
@@ -252,6 +261,7 @@ class SummaryController {
           [Sequelize.fn("SUM", Sequelize.col("amount")), "total"],
         ],
         where: {
+          user_id: req.userId,
           date: { [Op.between]: [startDate, endDate] },
         },
         group: ["type_id"],
@@ -276,7 +286,6 @@ class SummaryController {
       res.status(500).json({ message: "Error getting the type summary" });
     }
   }
-
   async getMethodSummary(req, res) {
     const { month, year } = req.query;
 
@@ -296,6 +305,7 @@ class SummaryController {
           [Sequelize.fn("SUM", Sequelize.col("amount")), "total"],
         ],
         where: {
+          user_id: req.userId,
           date: { [Op.between]: [startDate, endDate] },
         },
         group: ["pay_method_id"],
@@ -352,6 +362,7 @@ class SummaryController {
           [Sequelize.fn("SUM", Sequelize.col("amount")), "totalActual"],
         ],
         where: {
+          user_id: req.userId,
           date: { [Op.between]: [startDate, endDate] },
         },
         include: [
@@ -374,6 +385,7 @@ class SummaryController {
           ],
         ],
         where: {
+          user_id: req.userId,
           month: { [Op.between]: [startDate, endDate] },
         },
         include: [

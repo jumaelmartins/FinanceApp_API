@@ -7,14 +7,12 @@ export default class ExpenseType extends Model {
         type: {
           type: Sequelize.STRING,
           defaultValue: "",
-          unique: {
-            msg: "categoria já existe",
-          },
+          unique: { msg: "categoria já existe" },
         },
       },
       {
         sequelize,
-        tableName: "expense_type"
+        tableName: "expense_type",
       }
     );
     return this;
@@ -23,6 +21,9 @@ export default class ExpenseType extends Model {
   static associate(models) {
     this.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
     this.hasMany(models.Expense, { foreignKey: "type_id", as: "expenses" });
-    this.hasMany(models.ExpenseCategory, { foreignKey: "type_id", as: "categories" });
+    this.hasMany(models.ExpenseCategory, {
+      foreignKey: "type_id",
+      as: "categories",
+    });
   }
 }

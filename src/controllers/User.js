@@ -1,6 +1,5 @@
 import User from "../models/User";
 import Expense from "../models/Expense";
-
 import ProfilePicture from "../models/ProfilePicture";
 import Income from "../models/Income";
 import ExpensePlanning from "../models/ExpensePlanning";
@@ -50,8 +49,10 @@ class UserController {
       });
 
       res.json(user);
-    } catch (e) {
-      res.status(400).send(e);
+    } catch (error) {
+      res.status(400).json({
+        errors: ["Something's Wrong Happen"]
+      });
     }
   }
 
@@ -126,9 +127,9 @@ class UserController {
         username,
         email,
       });
-    } catch (e) {
+    } catch (error) {
       res.json({
-        errors: e.errors.message,
+        errors: error.errors.message,
       });
     }
   }

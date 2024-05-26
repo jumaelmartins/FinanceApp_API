@@ -6,35 +6,40 @@ require("dotenv").config();
 class SessionController {
   async store(req, res) {
     const { email, password } = req.body;
-    if (email === undefined || password === undefined)
-      return res.status(401).json({ errors: ["Informar usuario e Email"] });
-    const userExist = await User.findOne({ where: { email: email } });
-    if (!userExist) {
-      return res.status(400).json({
-        errors: ["usuario não localizado"],
-      });
-    } else {
-      const user = await User.findOne({ where: { email: email } });
-      if (!(await user.passwordIsValid(password))) {
+    try {
+      if (email === undefined || password === undefined)
+        return res.status(401).json({ errors: ["Informar usuario e Email"] });
+      const userExist = await User.findOne({ where: { email: email } });
+      if (!userExist) {
         return res.status(400).json({
-          errors: ["senha incorreta"],
+          errors: ["usuario não localizado"],
+        });
+      } else {
+        const user = await User.findOne({ where: { email: email } });
+        if (!(await user.passwordIsValid(password))) {
+          return res.status(400).json({
+            errors: ["senha incorreta"],
+          });
+        }
+
+        const { id, username } = user;
+
+        return res.json({
+          user: {
+            id,
+            username,
+            email,
+          },
+          token: jwt.sign({ id }, process.env.TOKEN_SECRET, {
+            expiresIn: process.env.TOKEN_EXPIRATION,
+          }),
         });
       }
-
-      const { id, username } = user;
-
-      return res.json({
-        user: {
-          id,
-          username,
-          email,
-        },
-        token: jwt.sign({ id }, process.env.TOKEN_SECRET, {
-          expiresIn: process.env.TOKEN_EXPIRATION,
-        }),
-      });
+    } catch (error) {
+      res.status(400).json({ errors: ["Somenthing's Went Wrong Here"] });
     }
   }
+
   async validate(req, res) {
     const authHeader = req.headers.authorization;
 
@@ -55,7 +60,7 @@ class SessionController {
         return res.json({
           tokenIsvalid: true,
         });
-    } catch (err) {
+    } catch (error) {
       return res.status(401).json({
         errors: ["Token Invalido"],
       });

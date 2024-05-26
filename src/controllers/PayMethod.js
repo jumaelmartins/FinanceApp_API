@@ -1,79 +1,99 @@
 import PayMethod from "../models/PayMethod";
+import Expense from "../models/Expense";
 
 class PayMethodController {
   async index(req, res) {
-    const method = await PayMethod.findAll();
-    res.json(method);
+    try {
+      const methods = await PayMethod.findAll({
+        attributes: ["id", "method"],
+        include: [
+          {
+            model: Expense,
+            as: "expenses",
+            attributes: ["id", "date", "amount", "description"],
+          },
+        ],
+      });
+      res.json(methods);
+    } catch (error) {
+      res.status(400).json({ errors: ["Erro ao buscar métodos de pagamento"] });
+    }
   }
 
   async store(req, res) {
     const { method } = req.body;
 
     if (!method) {
-      return res.status(401).json({
-        errors: ["Categoria não pode ser null"],
-      });
-    }
-    const methodExist = await PayMethod.findOne({
-      where: { method: method },
-    });
-
-    if (methodExist) {
-      return res.status(401).json({
-        errors: ["Categoria já existe"],
-      });
+      return res
+        .status(401)
+        .json({ errors: ["Método de pagamento não pode ser nulo"] });
     }
 
-    const methods = await PayMethod.create({
-      user_id: req.userId,
-      method,
-    });
-    return res.json(methods);
+    try {
+      const methodExist = await PayMethod.findOne({ where: { method } });
+      if (methodExist) {
+        return res
+          .status(401)
+          .json({ errors: ["Método de pagamento já existe"] });
+      }
+
+      const payMethod = await PayMethod.create({ method });
+      return res.json(payMethod);
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ errors: ["Erro ao criar método de pagamento"] });
+    }
   }
 
   async update(req, res) {
     const { method, id } = req.body;
-    const methods = await PayMethod.findByPk(id);
-
     const errors = [];
 
-    if (method !== methods.method) {
-      const methodExist = await PayMethod.findOne({
-        where: { method: method },
-      });
-      methodExist !== null ? errors.push("Categoria já existe") : "";
-      console.log(method, "Aqui", method);
-    }
+    try {
+      const payMethod = await PayMethod.findByPk(id);
 
-    if (errors.length > 0) {
-      console.log("maior que 0");
-      return res.status(401).json({
-        errors: errors.map((err) => err),
-      });
-    }
+      if (method && method !== payMethod.method) {
+        const methodExist = await PayMethod.findOne({ where: { method } });
+        if (methodExist) errors.push("Método de pagamento já existe");
+      }
 
-    const updatedMethod = await methods.update(req.body);
-    return res.json(updatedMethod);
+      if (errors.length > 0) {
+        return res.status(401).json({ errors });
+      }
+
+      const updatedPayMethod = await payMethod.update(req.body);
+      return res.json(updatedPayMethod);
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ errors: ["Erro ao atualizar método de pagamento"] });
+    }
   }
 
   async delete(req, res) {
     const { id } = req.body;
-    const methods = await PayMethod.findByPk(id);
-
     const errors = [];
 
-    if (!methods) {
-      errors.push("Categoria não localizada");
-    }
+    try {
+      const payMethod = await PayMethod.findByPk(id);
+      if (!payMethod) {
+        errors.push("Método de pagamento não localizado");
+      }
 
-    if (errors.length > 0) {
-      return res.status(401).json({
-        errors: errors.map((err) => err),
-      });
-    }
+      if (errors.length > 0) {
+        return res.status(401).json({ errors });
+      }
 
-    methods.destroy();
-    return res.status(200).json({ Tudo: "OK" });
+      await payMethod.destroy();
+      return res
+        .status(200)
+        .json({ message: "Método de pagamento excluído com sucesso" });
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ errors: ["Erro ao excluir método de pagamento"] });
+    }
   }
 }
 

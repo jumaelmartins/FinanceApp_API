@@ -19,7 +19,6 @@ export default class IncomePlanning extends Model {
         tableName: "income_planning",
       }
     );
-
     return this;
   }
 

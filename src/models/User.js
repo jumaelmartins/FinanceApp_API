@@ -8,16 +8,12 @@ export default class User extends Model {
         username: {
           type: Sequelize.STRING,
           defaultValue: "",
-          unique: {
-            msg: "nome de usuario já existe",
-          },
+          unique: { msg: "nome de usuario já existe" },
         },
         email: {
           type: Sequelize.STRING,
           defaultValue: "",
-          unique: {
-            msg: "email já existe",
-          },
+          unique: { msg: "email já existe" },
         },
         password_hash: {
           type: Sequelize.STRING,
@@ -38,34 +34,30 @@ export default class User extends Model {
         sequelize,
       }
     );
+
     this.addHook("beforeSave", async (user) => {
       if (user.password) {
         user.password_hash = await bcryptjs.hash(user.password, 8);
       }
     });
+
     return this;
   }
+
   passwordIsValid(password) {
     return bcryptjs.compare(password, this.password_hash);
   }
 
   static associate(models) {
-    this.hasMany(models.Expense, {
-      foreignKey: "user_id",
-      as: "expenses",
-    });
+    this.hasMany(models.Expense, { foreignKey: "user_id", as: "expenses" });
     this.hasMany(models.ProfilePicture, {
       foreignKey: "user_id",
       as: "picture",
     });
-
-    this.hasMany(models.Income, {
-      foreignKey: "user_id",
-      as: "incomes",
-    });
+    this.hasMany(models.Income, { foreignKey: "user_id", as: "incomes" });
     this.hasMany(models.ExpensePlanning, {
       foreignKey: "user_id",
-      as: "expansePlanning",
+      as: "expensePlanning",
     });
     this.hasMany(models.IncomePlanning, {
       foreignKey: "user_id",
