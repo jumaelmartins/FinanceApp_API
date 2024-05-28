@@ -35,7 +35,7 @@ class UserController {
           },
           {
             model: ExpensePlanning,
-            as: "expansePlanning",
+            as: "expensePlanning",
             attributes: ["id", "month", "planned_amount"],
           },
           {
