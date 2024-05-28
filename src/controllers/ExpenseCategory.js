@@ -1,24 +1,20 @@
 import ExpenseCategory from "../models/ExpenseCategory";
-import ExpensePlanning from "../models/ExpensePlanning";
-import Expense from "../models/Expense";
+import { Op } from "sequelize";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class ExpenseCategoryController {
   async index(req, res) {
     try {
       const categories = await ExpenseCategory.findAll({
-        attributes: ["id", "category_name"],
-        include: [
-          {
-            model: ExpensePlanning,
-            as: "plannedExpenses",
-            attributes: ["id", "month", "planned_amount"],
-          },
-          {
-            model: Expense,
-            as: "expenses",
-            attributes: ["id", "date", "amount"],
-          },
-        ],
+        where: {
+          [Op.or]: [
+            { user_id: req.userId },
+            { user_id: process.env.SYSTEM_USER_ID },
+          ],
+        },
+        attributes: ["id", "category_name", "user_id"],
       });
       res.json(categories);
     } catch (err) {
@@ -53,11 +49,20 @@ class ExpenseCategoryController {
   }
 
   async update(req, res) {
-    const { category_name, id } = req.body;
+    const { category_name } = req.body;
+    const id = req.params.id;
     const errors = [];
-
     try {
       const category = await ExpenseCategory.findByPk(id);
+      if (!category) {
+        return res.status(404).json({ errors: ["Categoria Não Localizada"] });
+      }
+
+      if (category.user_id !== req.userId) {
+        return res.status(403).json({
+          errors: ["Usuario não autorizado"],
+        });
+      }
 
       if (category_name && category_name !== category.category_name) {
         const categoryExist = await ExpenseCategory.findOne({
@@ -67,7 +72,7 @@ class ExpenseCategoryController {
       }
 
       if (errors.length > 0) {
-        return res.status(401).json({ errors });
+        return res.status(400).json({ errors });
       }
 
       const updatedCategory = await category.update(req.body);
@@ -78,7 +83,7 @@ class ExpenseCategoryController {
   }
 
   async delete(req, res) {
-    const { id } = req.body;
+    const id = req.params.id;
     const errors = [];
 
     try {
@@ -87,8 +92,14 @@ class ExpenseCategoryController {
         errors.push("Categoria não localizada");
       }
 
+      if (category.user_id !== req.userId) {
+        return res.status(403).json({
+          errors: ["Usuario não autorizado"],
+        });
+      }
+
       if (errors.length > 0) {
-        return res.status(401).json({ errors });
+        return res.status(400).json({ errors });
       }
 
       await category.destroy();

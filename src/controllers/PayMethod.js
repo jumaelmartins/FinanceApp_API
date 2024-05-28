@@ -1,18 +1,20 @@
 import PayMethod from "../models/PayMethod";
-import Expense from "../models/Expense";
+import dotenv from "dotenv";
+import { Op } from "sequelize";
+
+dotenv.config();
 
 class PayMethodController {
   async index(req, res) {
     try {
       const methods = await PayMethod.findAll({
+        where: {
+          [Op.or]: [
+            { user_id: req.userId },
+            { user_id: process.env.SYSTEM_USER_ID },
+          ],
+        },
         attributes: ["id", "method"],
-        include: [
-          {
-            model: Expense,
-            as: "expenses",
-            attributes: ["id", "date", "amount", "description"],
-          },
-        ],
       });
       res.json(methods);
     } catch (error) {
@@ -25,15 +27,23 @@ class PayMethodController {
 
     if (!method) {
       return res
-        .status(401)
+        .status(400)
         .json({ errors: ["Método de pagamento não pode ser nulo"] });
     }
 
     try {
-      const methodExist = await PayMethod.findOne({ where: { method } });
+      const methodExist = await PayMethod.findOne({
+        where: {
+          method,
+          [Op.or]: [
+            { user_id: req.userId },
+            { user_id: process.env.SYSTEM_USER_ID },
+          ],
+        },
+      });
       if (methodExist) {
         return res
-          .status(401)
+          .status(400)
           .json({ errors: ["Método de pagamento já existe"] });
       }
 
@@ -47,19 +57,40 @@ class PayMethodController {
   }
 
   async update(req, res) {
-    const { method, id } = req.body;
+    const { method } = req.body;
+    const id = req.params.id;
     const errors = [];
 
     try {
       const payMethod = await PayMethod.findByPk(id);
 
+      if (!payMethod) {
+        return res.status(404).json({
+          error: ["Method não existe"],
+        });
+      }
+
+      if (payMethod.user_id !== req.userId) {
+        return res.status(403).json({
+          errors: "Usuario não autorizado",
+        });
+      }
+
       if (method && method !== payMethod.method) {
-        const methodExist = await PayMethod.findOne({ where: { method } });
+        const methodExist = await PayMethod.findOne({
+          where: {
+            method,
+            [Op.or]: [
+              { user_id: req.userId },
+              { user_id: process.env.SYSTEM_USER_ID },
+            ],
+          },
+        });
         if (methodExist) errors.push("Método de pagamento já existe");
       }
 
       if (errors.length > 0) {
-        return res.status(401).json({ errors });
+        return res.status(400).json({ errors });
       }
 
       const updatedPayMethod = await payMethod.update(req.body);
@@ -72,17 +103,20 @@ class PayMethodController {
   }
 
   async delete(req, res) {
-    const { id } = req.body;
-    const errors = [];
+    const id = req.params.id;
 
     try {
       const payMethod = await PayMethod.findByPk(id);
       if (!payMethod) {
-        errors.push("Método de pagamento não localizado");
+        return res.status(404).json({
+          errors: ["Method não existe"],
+        });
       }
 
-      if (errors.length > 0) {
-        return res.status(401).json({ errors });
+      if (payMethod.user_id !== req.userId) {
+        return res.status(403).json({
+          erros: ["Usuario não autorizado"],
+        });
       }
 
       await payMethod.destroy();

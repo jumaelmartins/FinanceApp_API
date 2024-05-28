@@ -1,23 +1,21 @@
 import IncomeCategory from "../models/IncomeCategory";
 import Income from "../models/Income";
 import IncomePlannig from "../models/IncomePlanning";
+import dotenv from "dotenv";
+import { Op } from "sequelize";
+
+dotenv.config();
 
 class IncomeCategoryController {
   async index(req, res) {
     const categories = await IncomeCategory.findAll({
+      where: {
+        [Op.or]: [
+          { user_id: req.userId },
+          { user_id: process.env.SYSTEM_USER_ID },
+        ],
+      },
       attributes: ["id", "category_name"],
-      include: [
-        {
-          model: Income,
-          as: "incomes",
-          attributes: ["date", "amount", "description"],
-        },
-        {
-          model: IncomePlannig,
-          as: "planning",
-          attributes: ["month", "planned_amount"],
-        },
-      ],
     });
 
     res.json(categories);
@@ -32,7 +30,13 @@ class IncomeCategoryController {
       });
     }
     const categoryExist = await IncomeCategory.findOne({
-      where: { category_name: category_name },
+      where: {
+        category_name: category_name,
+        [Op.or]: [
+          { user_id: req.userId },
+          { user_id: process.env.SYSTEM_USER_ID },
+        ],
+      },
     });
 
     if (categoryExist) {
@@ -49,17 +53,39 @@ class IncomeCategoryController {
   }
 
   async update(req, res) {
-    const { category_name, id } = req.body;
+    const { category_name } = req.body;
+    const id = req.params.id;
     const category = await IncomeCategory.findByPk(id);
 
     const errors = [];
 
-    if (category_name !== category.category_name) {
-      const categoryExist = await IncomeCategory.findOne({
-        where: { category_name: category_name },
+    if (!category) {
+      return res.status(404).json({
+        errors: ["Categoria não existe"],
       });
-      categoryExist !== null ? errors.push("Categoria já existe") : "";
-      console.log(category_name, "Aqui", category_name);
+    } else {
+      if (category.user_id !== req.userId) {
+        return res.status(403).json({
+          errors: ["Usuario não autorizado"],
+        });
+      }
+    }
+
+    if (category_name && category_name !== category.category_name) {
+      const categoryExist = await IncomeCategory.findOne({
+        where: {
+          category_name: category_name,
+          [Op.or]: [
+            { user_id: req.userId },
+            { user_id: process.env.SYSTEM_USER_ID },
+          ],
+        },
+      });
+      if (categoryExist) {
+        return res.status(400).json({
+          errors: ["Categoria já existe"],
+        });
+      }
     }
 
     if (errors.length > 0) {
@@ -74,23 +100,29 @@ class IncomeCategoryController {
   }
 
   async delete(req, res) {
-    const { id } = req.body;
+    const id = req.params.id;
     const category = await IncomeCategory.findByPk(id);
 
-    const errors = [];
+    try {
+      if (!category) {
+        return res.status(404).json({
+          errors: ["Categoria não localizado"],
+        });
+      } else {
+        if (category.user_id !== req.userId) {
+          return res.status(403).json({
+            errors: ["Usuario não autorizado"],
+          });
+        }
+      }
 
-    if (!category) {
-      errors.push("Categoria não localizada");
-    }
-
-    if (errors.length > 0) {
-      return res.status(401).json({
-        errors: errors.map((err) => err),
+      category.destroy();
+      return res.status(200).json({ Tudo: "OK" });
+    } catch (error) {
+      return res.status(400).json({
+        errors: ["Somenthing's Went Wrong"],
       });
     }
-
-    category.destroy();
-    return res.status(200).json({ Tudo: "OK" });
   }
 }
 

@@ -1,18 +1,19 @@
 import ExpenseType from "../models/ExpenseType";
-import Expense from "../models/Expense";
 import ExpenseCategory from "../models/ExpenseCategory";
+import { Op } from "sequelize";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class ExpenseTypeController {
   async index(req, res) {
     try {
       const types = await ExpenseType.findAll({
+        where: {
+          [Op.or]: [{ user_id: req.userId }, { user_id: 9001 }],
+        },
         attributes: ["id", "type"],
         include: [
-          {
-            model: Expense,
-            as: "expenses",
-            attributes: ["id", "date", "amount", "description"],
-          },
           {
             model: ExpenseCategory,
             as: "categories",
@@ -28,20 +29,29 @@ class ExpenseTypeController {
 
   async store(req, res) {
     const { type } = req.body;
-
     if (!type) {
       return res
-        .status(401)
+        .status(400)
         .json({ errors: ["Tipo de despesa não pode ser nulo"] });
     }
-
     try {
-      const typeExist = await ExpenseType.findOne({ where: { type } });
+      const typeExist = await ExpenseType.findOne({
+        where: {
+          type,
+          [Op.or]: [
+            { user_id: req.userId },
+            { user_id: process.env.SYSTEM_USER_ID },
+          ],
+        },
+      });
       if (typeExist) {
-        return res.status(401).json({ errors: ["Tipo de despesa já existe"] });
+        return res.status(400).json({ errors: ["Tipo de despesa já existe"] });
       }
 
-      const expenseType = await ExpenseType.create({ type });
+      const expenseType = await ExpenseType.create({
+        type,
+        user_id: req.userId,
+      });
       return res.json(expenseType);
     } catch (err) {
       return res
@@ -51,19 +61,36 @@ class ExpenseTypeController {
   }
 
   async update(req, res) {
-    const { type, id } = req.body;
+    const { type } = req.body;
+    const id = req.params.id;
     const errors = [];
 
     try {
       const expenseType = await ExpenseType.findByPk(id);
 
+      if (!expenseType) {
+        return res.status(404).json({ errors: "Type não localizado" });
+      }
+
+      if (expenseType.user_id !== req.userId) {
+        return res.status(403).json({ errors: "Usuario não authorizado" });
+      }
+
       if (type && type !== expenseType.type) {
-        const typeExist = await ExpenseType.findOne({ where: { type } });
+        const typeExist = await ExpenseType.findOne({
+          where: {
+            type,
+            [Op.or]: [
+              { user_id: req.userId },
+              { user_id: process.env.SYSTEM_USER_ID },
+            ],
+          },
+        });
         if (typeExist) errors.push("Tipo de despesa já existe");
       }
 
       if (errors.length > 0) {
-        return res.status(401).json({ errors });
+        return res.status(400).json({ errors: errors.map((e) => e) });
       }
 
       const updatedExpenseType = await expenseType.update(req.body);
@@ -76,13 +103,17 @@ class ExpenseTypeController {
   }
 
   async delete(req, res) {
-    const { id } = req.body;
+    const id = req.params.id;
     const errors = [];
 
     try {
       const expenseType = await ExpenseType.findByPk(id);
       if (!expenseType) {
-        errors.push("Tipo de despesa não localizado");
+        return res.status(404).json({ errors: "Type não localizado" });
+      }
+
+      if (expenseType.user_id !== req.userId) {
+        return res.status(403).json({ errors: "Usuario não authorizado" });
       }
 
       if (errors.length > 0) {

@@ -25,5 +25,9 @@ export default class ExpenseType extends Model {
       foreignKey: "type_id",
       as: "categories",
     });
+    this.hasMany(models.ExpensePlanning, {
+      foreignKey: "type_id",
+      as: "planning",
+    });
   }
 }

@@ -18,7 +18,7 @@ class ProfilePictureController {
     }
   }
 
-  store(req, res) {
+  async store(req, res) {
     return upload(req, res, async (error) => {
       try {
         if (error) {

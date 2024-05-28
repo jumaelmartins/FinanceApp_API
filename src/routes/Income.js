@@ -6,7 +6,7 @@ const router = Router();
 
 router.get("/", authMiddleware, IncomeController.index);
 router.post("/", authMiddleware, IncomeController.store);
-router.put("/", authMiddleware, IncomeController.update);
-router.delete("/", authMiddleware, IncomeController.delete);
+router.put("/:id", authMiddleware, IncomeController.update);
+router.delete("/:id", authMiddleware, IncomeController.delete);
 
 export default router;

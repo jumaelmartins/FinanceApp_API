@@ -6,7 +6,7 @@ const router = Router();
 
 router.get("/", authMiddleware, ExpensePlanningController.index);
 router.post("/", authMiddleware, ExpensePlanningController.store);
-router.put("/", authMiddleware, ExpensePlanningController.update);
-router.delete("/", authMiddleware, ExpensePlanningController.delete);
+router.put("/:id", authMiddleware, ExpensePlanningController.update);
+router.delete("/:id", authMiddleware, ExpensePlanningController.delete);
 
 export default router;

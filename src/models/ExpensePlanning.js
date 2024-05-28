@@ -13,6 +13,11 @@ export default class ExpensePlanning extends Model {
           allowNull: false,
           defaultValue: "",
         },
+        description: {
+          type: Sequelize.STRING,
+          defaultValue: "",
+          allowNull: true,
+        },
       },
       {
         sequelize,
@@ -27,6 +32,14 @@ export default class ExpensePlanning extends Model {
     this.belongsTo(models.ExpenseCategory, {
       foreignKey: "category_id",
       as: "category",
+    });
+    this.belongsTo(models.ExpenseType, {
+      foreignKey: "type_id",
+      as: "type",
+    });
+    this.belongsTo(models.PayMethod, {
+      foreignKey: "pay_method_id",
+      as: "method",
     });
   }
 }

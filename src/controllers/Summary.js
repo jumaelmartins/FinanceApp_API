@@ -13,16 +13,16 @@ class SummaryController {
     const { month, year } = req.query;
     let whereClause = {};
     let plannedWhereClause = {};
+    whereClause.user_id = req.userId;
+    plannedWhereClause.user_id = req.userId;
 
     if (month && year) {
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0); // Last day of the month
       whereClause.date = {
-        user_id: req.userId,
         [Op.between]: [startDate, endDate],
       };
       plannedWhereClause.date = {
-        user_id: req.userId,
         [Op.between]: [startDate, endDate],
       };
     }

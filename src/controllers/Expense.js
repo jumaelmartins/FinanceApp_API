@@ -2,6 +2,10 @@ import Expense from "../models/Expense";
 import ExpenseCategory from "../models/ExpenseCategory";
 import ExpenseType from "../models/ExpenseType";
 import PayMethod from "../models/PayMethod";
+import dotenv from "dotenv";
+import { Op } from "sequelize";
+
+dotenv.config();
 
 class ExpenseController {
   async index(req, res) {
@@ -28,21 +32,47 @@ class ExpenseController {
         ],
       });
       res.json(expenses);
-    } catch (err) {
-      res.status(400).json({ errors: "(T_T)" });
+    } catch (error) {
+      res.status(400).json({ errors: ["Somenthing's Went Wrong"] });
     }
   }
 
   async store(req, res) {
-    const { date, category_id, amount, description, type_id, pay_method_id } =
-      req.body;
-    const errors = [];
+    const { date, category_id, amount, description, pay_method_id } = req.body;
 
-    if (!category_id) errors.push("Categoria não informada");
-    if (!date) errors.push("Data não informada");
+    if (!category_id) return res.status(401).json({errors: ["Categoria não pode ser null"]})
+    if (!date) return res.status(401).json({errors: ["Data não pode ser null"]})
 
-    if (errors.length > 0) {
-      return res.status(401).json({ errors });
+    const categoryExist = await ExpenseCategory.findOne({
+      where: {
+        id: category_id,
+        [Op.or]: [
+          { user_id: req.userId },
+          { user_id: process.env.SYSTEM_USER_ID },
+        ],
+      },
+    });
+
+    if (!categoryExist) {
+      return res
+        .status(400)
+        .json({ error: ["Categoria Informada não Existe"] });
+    }
+
+    const payMethodExist = await PayMethod.findOne({
+      where: {
+        id: pay_method_id,
+        [Op.or]: [
+          { user_id: req.userId },
+          { user_id: process.env.SYSTEM_USER_ID },
+        ],
+      },
+    });
+
+    if (!payMethodExist) {
+      return res
+        .status(400)
+        .json({ error: ["Pay Merhod Informado não Existe"] });
     }
 
     try {
@@ -52,23 +82,70 @@ class ExpenseController {
         date,
         amount,
         description,
-        type_id,
+        type_id: categoryExist.type_id,
         pay_method_id,
       });
       return res.json(expense);
-    } catch (err) {
+    } catch (error) {
       return res.status(400).json({ errors: ["Erro ao criar despesa"] });
     }
   }
 
   async update(req, res) {
-    const { id, amount } = req.body;
+    const { amount, category_id, pay_method_id } = req.body;
+    const id = req.params.id;
     const errors = [];
 
     try {
       const expense = await Expense.findByPk(id);
 
-      if (amount !== undefined && amount === "") {
+      if (!expense) {
+        return res.status(404).json({
+          error: ["Despesa não localizada"],
+        });
+      }
+
+      if (category_id && category_id !== expense.category_id) {
+        const categoryExist = await ExpenseCategory.findOne({
+          where: {
+            id: category_id,
+            [Op.or]: [
+              { user_id: req.userId },
+              { user_id: process.env.SYSTEM_USER_ID },
+            ],
+          },
+        });
+        if (!categoryExist) {
+          return res
+            .status(400)
+            .json({ error: ["Categoria Informada não Existe"] });
+        }
+      }
+
+      if (pay_method_id && pay_method_id !== expense.pay_method_id) {
+        const payMethodExist = await ExpenseCategory.findOne({
+          where: {
+            id: pay_method_id,
+            [Op.or]: [
+              { user_id: req.userId },
+              { user_id: process.env.SYSTEM_USER_ID },
+            ],
+          },
+        });
+        if (!payMethodExist) {
+          return res
+            .status(400)
+            .json({ error: ["Pay Method Informado não Existe"] });
+        }
+      }
+
+      if (expense.user_id !== req.userId) {
+        return res.status(403).json({
+          error: ["Usuario não autorizado"],
+        });
+      }
+
+      if (amount && amount === "") {
         errors.push("Valor não pode ser nulo");
       }
 
@@ -84,17 +161,20 @@ class ExpenseController {
   }
 
   async delete(req, res) {
-    const { id } = req.body;
-    const errors = [];
+    const id = req.params.id;
 
     try {
       const expense = await Expense.findByPk(id);
       if (!expense) {
-        errors.push("Despesa não localizada");
+        return res.status(404).json({
+          error: ["Despesa não localizada"],
+        });
       }
 
-      if (errors.length > 0) {
-        return res.status(401).json({ errors });
+      if (expense.user_id !== req.userId) {
+        return res.status(403).json({
+          error: ["Usuario não autorizado"],
+        });
       }
 
       await expense.destroy();

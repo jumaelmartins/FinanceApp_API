@@ -4,11 +4,14 @@ import ProfilePicture from "../models/ProfilePicture";
 import Income from "../models/Income";
 import ExpensePlanning from "../models/ExpensePlanning";
 import IncomePlanning from "../models/IncomePlanning";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class UserController {
   async show(req, res) {
     try {
-      const id = req.query.id;
+      const id = req.params.id;
 
       if (req.userId !== parseInt(id)) {
         return res.status(403).json({
@@ -51,7 +54,7 @@ class UserController {
       res.json(user);
     } catch (error) {
       res.status(400).json({
-        errors: ["Something's Wrong Happen"]
+        errors: ["Usuario não localizado"],
       });
     }
   }
