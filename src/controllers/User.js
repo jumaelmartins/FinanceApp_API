@@ -9,6 +9,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 class UserController {
+  async index(req, res) {
+    const users = await User.findAll({
+      attributes: ["id", "username", "email"],
+    });
+
+    res.json(users);
+  }
+
   async show(req, res) {
     try {
       const id = req.params.id;
@@ -60,20 +68,29 @@ class UserController {
   }
 
   async store(req, res) {
-    const { email } = req.body;
-    const userExists = await User.findOne({ where: { email: email } });
+    const { email, username } = req.body;
+    const userExists = await User.findOne({
+      where: { email: email.toLowerCase() },
+    });
+
     if (userExists) {
       return res.status(401).json({
         errors: ["email já cadastrado"],
       });
     }
+
+    const newUser = {
+      ...req.body,
+      username: username.toLowerCase(),
+      email: email.toLowerCase(),
+    };
+
     try {
-      const { id, username } = await User.create(req.body);
+      const { id, username } = await User.create(newUser);
       res.json({ id, username, email });
     } catch (e) {
-      res.json({
-        errors: e.errors.map((e) => e.message),
-      });
+      res.status(400);
+      console.log(e);
     }
   }
 
@@ -82,48 +99,54 @@ class UserController {
     const { username, email, oldPassword, confirmPassword, password } =
       await req.body;
 
+    let errors = [];
+
+    if (username && username.toLowerCase() !== user.username) {
+      const usernameExist = await User.findOne({
+        where: { username: username.toLowerCase() },
+      });
+      usernameExist !== null ? errors.push("Usuario já existe") : "";
+    }
+
+    if (email && email.toLowerCase() !== user.email) {
+      const emailExist = await User.findOne({
+        where: { email: email.toLowerCase() },
+      });
+      emailExist !== null ? errors.push("Email já existe") : "";
+    }
+
+    if ((oldPassword && !password) || (oldPassword && !confirmPassword)) {
+      errors.push("Necessario informar nova senha");
+    }
+
+    if (oldPassword && !(await user.passwordIsValid(oldPassword))) {
+      errors.push("Senha Incorreta");
+    }
+
+    if (password && !oldPassword) {
+      errors.push("Informe a senha antiga");
+    }
+
+    if (password !== confirmPassword) {
+      errors.push("As senhas precisam ser iguais");
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        errors: errors.map((e) => {
+          return e;
+        }),
+      });
+    }
+
+    const updatedUser = {
+      ...req.body,
+      username: username.toLowerCase(),
+      email: email.toLowerCase(),
+    };
+
     try {
-      let errors = [];
-
-      if (username && username !== user.username) {
-        const usernameExist = await User.findOne({
-          where: { username: username },
-        });
-        usernameExist !== null ? errors.push("Usuario já existe") : "";
-      }
-
-      if (email && email !== user.email) {
-        const emailExist = await User.findOne({
-          where: { email: email },
-        });
-        emailExist !== null ? errors.push("Email já existe") : "";
-      }
-
-      if ((oldPassword && !password) || (oldPassword && !confirmPassword)) {
-        errors.push("Necessario informar nova senha");
-      }
-
-      if (oldPassword && !(await user.passwordIsValid(oldPassword))) {
-        errors.push("Senha Incorreta");
-      }
-
-      if (password && !oldPassword) {
-        errors.push("Informe a senha antiga");
-      }
-
-      if (password !== confirmPassword) {
-        errors.push("As senhas precisam ser iguais");
-      }
-
-      if (errors.length > 0) {
-        return res.status(400).json({
-          errors: errors.map((e) => {
-            return e;
-          }),
-        });
-      }
-
-      const { id } = await user.update(req.body);
+      const { id } = await user.update(updatedUser);
 
       return res.json({
         id,
